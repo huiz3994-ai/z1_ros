@@ -1,8 +1,11 @@
 <launch>
   <arg name="UnitreeGripperYN" default="true"/>
+  <arg name="gui" default="true"/>
 
-  <include file="$(find unitree_gazebo)/launch/z1.launch">
+  <include file="$(find unitree_gazebo)/launch/sim_z1.launch">
     <arg name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="wname" default="power_cabinet"/> <!-- 空世界为“earth”，有电力柜的为“power_cabinet” -->
   </include>
 
   <node pkg="z1_controller" type="z1_ctrl" name="z1_ctrl" output="screen">

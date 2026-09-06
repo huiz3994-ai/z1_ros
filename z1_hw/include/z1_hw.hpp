@@ -25,6 +25,7 @@ public:
    * @note Be sure to call the init() method before operation.
    */
   Z1HW(ros::NodeHandle& nh);
+  ~Z1HW() override;
 
   /**
    * @brief Initializes the model informations.

@@ -17,6 +17,17 @@
   <build_depend>interactive_markers</build_depend>
   <build_depend>moveit_visual_tools</build_depend>
   <build_depend>rviz_visual_tools</build_depend>
+  <build_depend>kdl_parser</build_depend>
+  <build_depend>trac_ik</build_depend>
+  <build_depend>nlopt</build_depend>
+  <build_depend>unitree_legged_msgs</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+
+  <!-- PCL相关依赖 start-->
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>libpcl-dev</build_depend>
+  <!-- PCL相关依赖 end-->
 
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>moveit_core</exec_depend>
@@ -31,5 +42,19 @@
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rviz</exec_depend>
 
+  <exec_depend>tf2_eigen</exec_depend>
+  <exec_depend>unitree_legged_msgs</exec_depend>
+
+  <!-- PCL相关依赖 start-->
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>libpcl-dev</exec_depend>
+  <!-- PCL相关依赖 end-->
+  
   <depend>z1_sdk</depend>
+  <depend>geometry_msgs</depend>
+  <depend>trac_ik_lib</depend>
+  
+  <!-- 平滑计算依赖 -->
+  <depend>tf2_geometry_msgs</depend>
 </package>

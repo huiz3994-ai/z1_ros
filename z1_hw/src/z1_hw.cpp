@@ -12,9 +12,9 @@ Z1HW::Z1HW(ros::NodeHandle& nh)
   nh.param<int>("udp_to_controller/own_port", sdk_own_port, 8872);
 
   int njoints = has_gripper ? 7 : 6;
-  pos = new double[njoints];
-  vel = new double[njoints];
-  eff = new double[njoints];
+  pos = new double[njoints]();
+  vel = new double[njoints]();
+  eff = new double[njoints]();
 
   /* Communicate wit arm */
   arm = new UNITREE_ARM_SDK::UnitreeArm(controller_ip, sdk_own_port, controller_port);
@@ -59,6 +59,15 @@ Z1HW::Z1HW(ros::NodeHandle& nh)
   /* Set UnitreeArm SDK Class */
   gripper_as = new actionlib::SimpleActionServer<control_msgs::GripperCommandAction>("z1_gripper", boost::bind(&Z1HW::gripperCB, this, _1), false);
   gripper_as->start();
+}
+
+Z1HW::~Z1HW()
+{
+  delete gripper_as;
+  delete arm;
+  delete[] pos;
+  delete[] vel;
+  delete[] eff;
 }
 
 void Z1HW::init()
@@ -113,6 +122,11 @@ void Z1HW::write(const ros::Time& time, const ros::Duration& period)
   }
 
   arm->sendRecv();
+  
+  //ROS_INFO_STREAM("joint1 cmd: " << cmd[0]); // 添加调试输出
+  // ROS_INFO_STREAM("joint cmd: " << cmd[0] << ", " <<cmd[1]  << ", " <<cmd[2]  << ", " <<cmd[3]  << ", " <<cmd[4] << ", " <<cmd[5]); // 添加调试输出
+  ROS_INFO_STREAM_THROTTLE(3.0, "[STATE from z1_hw]joint cmd: " << cmd[0] << ", " << cmd[1] << ", " << cmd[2] 
+                          << ", " << cmd[3] << ", " << cmd[4] << ", " << cmd[5]); // 添加调试输出（3秒一次输出）
 }
 
 void Z1HW::gripperCB(const control_msgs::GripperCommandGoalConstPtr& msg)
@@ -146,7 +160,7 @@ void Z1HW::gripperCB(const control_msgs::GripperCommandGoalConstPtr& msg)
     {
       if(gripper_feedback.stalled)
       {
-        ROS_INFO("[Gripper] Reach goal.");
+        ROS_INFO_STREAM_THROTTLE(3.0,"[Gripper] Reach goal.");
         gripper_result.position = gripper_feedback.position;
         gripper_result.effort = gripper_feedback.effort;
         gripper_result.reached_goal = gripper_feedback.reached_goal;

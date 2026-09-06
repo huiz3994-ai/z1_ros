@@ -1,5 +1,5 @@
 udp:
-  mcu_ip: 192.168.123.110
+  mcu_ip: 192.168.31.110
   port_to_mcu: 8881
   port_to_sdk: 8871
 

@@ -1,0 +1,62 @@
+<launch>
+  <arg name="UnitreeGripperYN" default="false"/>
+  <arg name="Touch" default="false" />
+  <arg name="initial_position" default="default"/>
+  <arg name="test_start" default="false"/>
+
+  <arg name="controller" default="true" />
+  <arg name="ros_controller" default="false" />
+  <arg name="moveit" default="false" />
+  <arg name="rviz" default="true" />
+  <arg name="aruco_ros" default="true" />
+  <arg name="ctrl_mode" default="default"/>
+
+  <!-- 左臂：起 Gazebo + 左机器人 + 左控制节点 -->
+  <include file="$(find z1_bringup)/launch/sim_ctrl_DUEL.launch" if="$(arg controller)">
+    <arg name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+    <arg name="arm_ns" value="z1_left"/>
+    <arg name="start_gazebo" value="true"/>
+    <arg name="rname" value="z1_left"/>
+
+    <!-- 左臂位姿：原点往 +Y 偏一点 -->
+    <arg name="x"   value="0.0"/>
+    <arg name="y"   value="0.2"/>
+    <arg name="z"   value="0.0"/>
+    <arg name="yaw" value="0.0"/>
+  </include>
+
+  <!-- 右臂：只往同一个 Gazebo 世界里再 Spawn 一只 + 右控制节点 -->
+  <include file="$(find z1_bringup)/launch/sim_ctrl_DUEL.launch" if="$(arg controller)">
+    <arg name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+    <arg name="arm_ns" value="z1_right"/>
+    <arg name="start_gazebo" value="false"/>
+    <arg name="rname" value="z1_right"/>
+
+    <!-- 右臂位姿：原点往 -Y 偏一点 -->
+    <arg name="x"   value="0.0"/>
+    <arg name="y"   value="-0.2"/>
+    <arg name="z"   value="0.0"/>
+    <arg name="yaw" value="0.0"/>
+  </include>
+
+  <!-- rviz / aruco / Touch 等，这里你原样保持就好 -->
+  <include file="$(find z1_rviz)/launch/view_robot_no_moveit.launch" if="$(arg rviz)"/>
+
+  <!-- get_end_effector_pose 暂时先关掉，等单臂双臂逻辑都稳定了再开 -->
+  <node name="get_end_effector_pose"
+        pkg="z1_examples"
+        type="get_end_effector_pose"
+        output="screen"
+        if="false"/>
+
+  <node name="real_time_mixed_ctrl_solver"
+        pkg="z1_examples"
+        type="test1_Touch_PLUS_vision_solver"
+        output="screen"
+        if="$(arg test_start)">
+    <param name="ctrl_mode" type="string" value="$(arg ctrl_mode)"/>
+  </node>
+
+  <include file="$(find geomagic_myhaptics)/launch/pubforce.launch" if="$(arg Touch)"/>
+  <include file="$(find aruco_ros)/launch/realsense_single2_sim.launch" if="$(arg aruco_ros)"/>
+</launch>

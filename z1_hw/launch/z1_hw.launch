@@ -1,6 +1,10 @@
 <launch>
   <arg name="UnitreeGripper" default="true"/>
   <arg name="controllers" default="joint_state_controller z1_joint_traj_controller" />
+  <arg name="high_freq_control" default="false" />
+  <!-- <arg name="controllers" default="joint_state_controller joint1_position_controller" /> -->
+  <!-- 添加初始位置参数 -->
+  <arg name="initial_position" default="default" />
 
   <rosparam file="$(find z1_hw)/config/controllers.yaml" command="load"/>
   
@@ -11,5 +15,11 @@
     <param name="UnitreeGripperYN" value="$(arg UnitreeGripper)"/>
     <rosparam file="$(find z1_controller)/config/config.yaml"/>
     <rosparam file="$(find z1_hw)/config/config.yaml"/>
+  </node>
+
+  <!-- my hw code -->
+  <node type="high_freq_control" pkg="z1_hw" name="high_freq_control"
+        output="screen" if="$(arg high_freq_control)">
+    <param name="initial_position" type="string" value="$(arg initial_position)" />
   </node>
 </launch>

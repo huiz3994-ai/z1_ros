@@ -1,0 +1,19 @@
+<launch>
+  <arg name="UnitreeGripper" default="true"/>
+  <arg name="controllers" default="joint_state_controller joint_group_position_controller" />
+  <!-- <arg name="controllers" default="joint_state_controller joint1_position_controller" /> -->
+
+  <rosparam file="$(find z1_hw)/config/controllers.yaml" command="load"/>
+  
+  <node name="ros_control_controller_spawner" pkg="controller_manager" type="spawner" 
+    respawn="false" output="screen" args="$(arg controllers)"/>
+
+  <node type="z1_hw_node" pkg="z1_hw" name="z1_hw_node" output="screen">
+    <param name="UnitreeGripperYN" value="$(arg UnitreeGripper)"/>
+    <rosparam file="$(find z1_controller)/config/config.yaml"/>
+    <rosparam file="$(find z1_hw)/config/config.yaml"/>
+  </node>
+
+  <!-- my hw code -->
+  <node type="high_freq_control_single" pkg="z1_hw" name="high_freq_control_single" output="screen"/>
+</launch>

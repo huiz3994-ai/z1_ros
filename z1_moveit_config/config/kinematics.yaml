@@ -1,4 +1,6 @@
 manipulator:
+#这里存放机器人运动学求解器，这里使用 Trac_IK，得到数值解。其求解成功率高，求解速度毫秒级
+#之后开发机器人实时控制，可以替换为IKFast，得到解析解（会得到多个解）。其求解稳定、速度更快，达到微秒级，但是配置较为复杂
   kinematics_solver: trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
   kinematics_solver_search_resolution: 0.005
   kinematics_solver_timeout: 0.005

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   z1_sdk
+  position_controllers #新增
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -34,3 +35,13 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node src/z1_hw.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${z1_sdk_LIBRARIES})
+
+# 在CMakeLists.txt中添加
+add_executable(high_freq_control src/high_freq_control.cpp)
+target_link_libraries(high_freq_control ${catkin_LIBRARIES})
+add_executable(joint1_high_freq_controller src/joint1_high_freq_controller.cpp)
+target_link_libraries(joint1_high_freq_controller ${catkin_LIBRARIES})
+add_executable(high_freq_control_single src/high_freq_control_single.cpp) #从 high_freq_control 固定下来的稳定版本
+target_link_libraries(high_freq_control_single ${catkin_LIBRARIES})
+add_executable(high_freq_control_test src/high_freq_control_test.cpp) #从 high_freq_control 修改而来的性能测试版本
+target_link_libraries(high_freq_control_test ${catkin_LIBRARIES})

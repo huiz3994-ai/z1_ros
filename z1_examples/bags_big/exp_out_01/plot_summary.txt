@@ -1,0 +1,31 @@
+ROS bag plotting summary
+============================================================
+bag: /home/v233/z1_ws/src/z1_ros/z1_examples/bags_big/exp__20260308_180306.bag
+output_dir: /home/v233/z1_ws/src/z1_ros/z1_examples/bags_big/exp_out_01
+time_window: start=None end=None
+
+Available topic samples:
+- target_pose: 7012
+- current_pose: 7030
+- actual_pose: 8304
+- aruco_raw: 603
+- aruco_processed: 0
+- realsense_raw: 658
+- realsense_processed: 0
+- touch_increment: 8477
+- touch_joy: 27188
+- aruco_flag: 848
+- k_aruco_pos_ctrl: 0
+- ctrl_mode: 0
+- ik_solved: 0
+- ik_solve_time: 0
+- goal_joint_positions: 7014
+- joint_cmd: 3519
+- joint_states: 8331
+- hf_goal: 0
+- hf_current: 0
+- hf_actual: 0
+- hf_all_reached: 0
+
+joint_states names (first sample):
+['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']

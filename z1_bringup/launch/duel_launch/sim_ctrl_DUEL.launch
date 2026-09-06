@@ -1,0 +1,41 @@
+<launch>
+  <arg name="UnitreeGripperYN" default="true"/>
+
+  <!-- 控制节点 namespace：z1_left / z1_right -->
+  <arg name="arm_ns" default=""/>
+
+  <!-- 是否由这一份去起 Gazebo 空世界 -->
+  <arg name="start_gazebo" default="true"/>
+
+  <!-- 这一只机器人在 Gazebo 里的“实例名” -->
+  <arg name="rname" default="z1"/>
+
+  <!-- 新增：这一只机器人的初始位姿 -->
+  <arg name="x"   default="0.0"/>
+  <arg name="y"   default="0.0"/>
+  <arg name="z"   default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+
+  <!-- 1️⃣ 仿真机器人 + controllers（不加 arm_ns） -->
+  <include file="$(find unitree_gazebo)/launch/sim_z1.launch">
+    <arg name="wname" value="earth"/>
+    <arg name="rname" value="$(arg rname)"/>
+    <arg name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+    <arg name="start_gazebo" value="$(arg start_gazebo)"/>
+
+    <!-- 新增：把位姿传给 sim_z1 -->
+    <arg name="x"   value="$(arg x)"/>
+    <arg name="y"   value="$(arg y)"/>
+    <arg name="z"   value="$(arg z)"/>
+    <arg name="yaw" value="$(arg yaw)"/>
+  </include>
+
+  <!-- 2️⃣ 每只手臂的控制节点，用 namespace 隔开 -->
+  <group ns="$(arg arm_ns)">
+    <node pkg="z1_controller" type="z1_ctrl" name="z1_ctrl" output="screen">
+      <param name="communication" value="ROS"/>
+      <param name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+      <rosparam file="$(find z1_controller)/config/config.yaml"/>
+    </node>
+  </group>
+</launch>

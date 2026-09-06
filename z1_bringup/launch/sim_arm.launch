@@ -1,22 +1,95 @@
 <launch>
-  <arg name="UnitreeGripperYN" default="true"/>
+  <arg name="UnitreeGripperYN" default="false"/>
+  <arg name="Touch" default="false" />
+  <arg name="initial_position" default="default" doc="default= zero postition, forward= work position"/>
+  <arg name="test_start" default="false" 
+      doc="Enable real-time mixed control solver when true"/>
 
   <arg name="controller" default="true" />
   <arg name="ros_controller" default="true" />
   <arg name="moveit" default="true" />
-  <arg name="rviz" default="false" />
+  <arg name="rviz" default="true" />
+  <arg name="gui" default="true" />
+  <arg name="aruco_ros" default="true" />
+  <arg name="ctrl_mode" default="default" 
+       doc="Control mode options: [default, aruco_for_pos, aruco_for_ori, mixed_pos]"/>
+
+  <!-- yolo_depth相关参数 -->
+  <arg name="yolo_depth" default="false"/> <!-- true 为启用 yolo_depth 节点 -->
+  <arg name="weights" default="/home/v233/ultralytics/runs/power_cabinet_extended_ALL/train/weights/best.pt"/>
+  <arg name="color_topic" default="/d435/color/image_raw"/>
+  <arg name="depth_topic" default="/d435/aligned_depth_to_color/image_raw"/>
+  <arg name="info_topic" default="/d435/aligned_depth_to_color/camera_info"/>
+  <arg name="hint_frame" default="link06"/>
+  <arg name="fg_percentile" default="50"/>
+  <arg name="z_min" default="0.15"/>
+  <arg name="z_max" default="6.5"/>
+  
 
   <include file="$(find z1_bringup)/launch/sim_ctrl.launch" if="$(arg controller)">
     <arg name="UnitreeGripperYN" value="$(arg UnitreeGripperYN)"/>
+    <arg name="gui" value="$(arg gui)"/>
   </include>
 
   <group if="$(arg ros_controller)">
     <include file="$(find z1_hw)/launch/z1_hw.launch">
       <arg name="UnitreeGripper" value="$(arg UnitreeGripperYN)"/>
+      <arg name="initial_position" value="$(arg initial_position)" />
+      <arg name="high_freq_control" value="$(arg test_start)" />
+      <arg name="controllers" value="$(eval 'joint_state_controller joint_group_position_controller' if arg('test_start') else 'joint_state_controller z1_joint_traj_controller')" />
     </include>
   </group>
 
+  <!-- Keep MoveIt's action endpoint available without claiming teleop joints. -->
+  <node if="$(eval arg('test_start') and arg('ros_controller'))"
+        pkg="controller_manager" type="spawner" name="teleop_trajectory_loader"
+        args="--stopped z1_joint_traj_controller" output="screen" />
+
   <include file="$(find z1_moveit_config)/launch/move_group.launch" if="$(arg moveit)"/>
 
-  <include file="$(find z1_rviz)/launch/view_robot.launch" if="$(arg rviz)"/>
+  <include file="$(find z1_rviz)/launch/view_robot_no_moveit.launch" if="$(arg rviz)"/>
+
+  <!-- my node -->
+  <node name="get_end_effector_pose" pkg="z1_examples" type="get_end_effector_pose" output="screen"/>
+  <node name="real_time_mixed_ctrl_solver" pkg="z1_examples" type="test1_Touch_PLUS_vision_solver" output="screen" if="$(arg test_start)">
+    <param name="ctrl_mode" type="string" value="$(arg ctrl_mode)"/>
+  </node>
+  <!-- Touch -->
+  <include file="$(find geomagic_myhaptics)/launch/pubforce.launch" if="$(arg Touch)"/>
+  <!-- aruco_ros -->
+  <include file="$(find aruco_ros)/launch/realsense_single2_sim.launch" if="$(arg aruco_ros)">
+    </include>
+  <!-- easyhandeye -->
+  <!-- 直接将标定结果发布到静态tf，参数依次为x,y,z,qx,qy,qz,qw -->
+  <!-- 仿真启用的机器人描述包括了 realsense 相机，这里无需发布 -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="realsense_to_base_link" args="0.07374284684247943 0.024542071578954112 0.061753250711652295 -0.509162985061133 0.47824678475472604 -0.49102684833978094 0.5205052369812472 link06 camera_color_frame 300" /> -->
+  
+  <!-- realsense 仿真启动补足-->
+  <include file="$(find realsense_ros_gazebo)/launch/aligned_depth_to_color.launch">
+  </include>
+    <!-- realsense 仿真平面提取节点-->
+  <include file="$(find plane_normal)/launch/depth_plane.launch">
+    <arg name="start_camera" value="false"/>
+    <arg name="depth_topic" value="/d435/aligned_depth_to_color/image_raw"/>
+    <arg name="info_topic"  value="/d435/aligned_depth_to_color/camera_info"/>
+  </include>
+  <!-- yolo_depth 仿真用相机-机械臂tf变换 -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="d435_to_camera_link"
+        args="0 0 0 0 0 0 1 d435_link camera_link" />
+
+  <!-- 启动 yolo_depth 节点(仿真用) -->
+  <group if="$(arg yolo_depth)">
+    <include file="$(find yolo_depth)/launch/yolo_depth_rviz.launch">
+      <arg name="weights"       value="$(arg weights)"/>
+      <arg name="color_topic"   value="$(arg color_topic)"/>
+      <arg name="depth_topic"   value="$(arg depth_topic)"/>
+      <arg name="info_topic"    value="$(arg info_topic)"/>
+    </include>
+    <!-- 覆盖私有参数：注意这里用 node 名作为 namespace -->
+    <param name="/yolo_depth_rviz/z_min" value="$(arg z_min)"/>
+    <param name="/yolo_depth_rviz/z_max" value="$(arg z_max)"/>
+    <param name="/yolo_depth_rviz/fg_percentile" value="$(arg fg_percentile)"/>
+    <param name="/yolo_depth_rviz/hint_frame" value="$(arg hint_frame)"/>
+  </group>
+
 </launch>
